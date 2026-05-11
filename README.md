@@ -1,17 +1,21 @@
-# cafe_finder_app
+☕ CafeFinder - Mobile Application
+CafeFinder adalah aplikasi mobile berbasis Flutter yang dirancang untuk membantu mahasiswa dan pekerja remote menemukan tempat nugas (kafe) ternyaman di area Kota Palu. Proyek ini merupakan hasil migrasi dan pengembangan lebih lanjut dari proyek UTS Android Studio (Java) sebelumnya.
 
-A new Flutter project.
+🚀 Fitur Utama
+Authentication: Sistem Login dan Register untuk pengguna (sedang dalam pengembangan API).
+Explore Cafe: Menampilkan katalog kafe dengan tampilan Grid yang modern.
+Real-time Search: Fitur pencarian kafe secara instan untuk mempermudah navigasi.
+Cafe Details: Informasi lengkap mengenai lokasi, rating, deskripsi, dan suasana kafe.
+Profile Management: Halaman profil pengguna untuk pengaturan akun dan sesi.
 
-## Getting Started
+🛠️ Tech Stack
+Frontend: Flutter (Dart)
+State Management: Stateful/Stateless Widgets
+Navigation: Navigator 2.0 (Material Routing)
+Backend (Rencana): REST API (Laravel) / Supabase (Remote Database)
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+👥 Tim Pengembang (Kelompok 6)
+Claudya Christy Koloay 
+Muhammad Naufal Amar
+Irpandi
+Esar Fauzan
