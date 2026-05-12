@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'screens/login_screen.dart'; // Pastikan sudah di-import
+import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
 
-  // Initialize Supabase from environment variables
+
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
@@ -26,10 +27,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CafeFinder',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.brown, useMaterial3: true),
-      // UBAH BAGIAN INI:
-      // Pastikan home mengarah ke LoginScreen()
-      home: const LoginScreen(),
+      theme: ThemeData(
+        primarySwatch: Colors.brown, 
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFFFF8F0), 
+      ),
+      home: const SplashScreen(), 
     );
   }
 }
+
