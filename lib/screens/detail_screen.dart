@@ -1,135 +1,153 @@
 import 'package:flutter/material.dart';
 import '../models/cafe.dart';
 
-class DetailScreen extends StatelessWidget {
-  final Cafe cafe; // Menerima objek cafe dari halaman sebelumnya
+class DetailScreen extends StatefulWidget {
+  final Cafe cafe;
 
   const DetailScreen({super.key, required this.cafe});
+
+  @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  // Variabel untuk nyimpan status warna tombol hati
+  bool isFavorite = false;
+
+  // Fungsi yang nanti akan dikerjakan Amar
+  Future<void> _toggleFavorite() async {
+    // TODO: AMAR - Masukkan logika http.post ke API Laravel/MongoDB di sini!
+    // Kamu bisa kirim 'widget.cafe.name' atau ID kafenya ke backend.
+    
+    // UI Flutter akan langsung merubah warna hatinya
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+
+    // Munculkan notifikasi pop-up kecil di bawah
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isFavorite ? "Ditambahkan ke Favorit" : "Dihapus dari Favorit"),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
-      // Di Flutter, kita ganti CoordinatorLayout dengan CustomScrollView
-      body: CustomScrollView(
-        slivers: [
-          // Ini adalah padanan dari CollapsingToolbarLayout
-          SliverAppBar(
-            expandedHeight: 320.0,
-            pinned: true, // Toolbar tetap menempel di atas saat di-scroll
-            backgroundColor: const Color(0xFF4E342E), // Warna saat collapsed
-            iconTheme: const IconThemeData(color: Colors.black), // navigationIconTint
-            flexibleSpace: FlexibleSpaceBar(
-              background: Image.asset(
-                cafe.imagePath,
-                fit: BoxFit.cover,
-              ),
-            ),
+      body: Stack(
+        children: [
+          // 1. GAMBAR BACKGROUND (Header)
+          Image.asset(
+            widget.cafe.imagePath, // Berubah jadi widget.cafe
+            width: double.infinity,
+            height: 420,
+            fit: BoxFit.cover,
           ),
 
-          // Ini adalah padanan dari NestedScrollView
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: const Offset(0, -40), // layout_marginTop="-40dp"
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Container(
-                  // Padanan dari MaterialCardView
+          // 2. KONTEN SCROLLABLE
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 360),
+
+                // 3. KARTU PUTIH (THE FLOATING CARD)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 6,
-                        offset: Offset(0, 3),
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Padanan RelativeLayout (Nama Kafe & Rating)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Text(
-                              cafe.name,
+                              widget.cafe.name, // Berubah jadi widget.cafe
                               style: const TextStyle(
-                                fontSize: 24,
+                                fontSize: 26,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF4E342E),
+                                color: Color(0xFF333333),
                               ),
                             ),
                           ),
-                          Text(
-                            cafe.rating, // Sudah ada icon bintangnya dari model
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFFF9800),
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Color(0xFFFFB300), size: 24),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.cafe.rating, // Berubah jadi widget.cafe
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFFFB300),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-
-                      // Lokasi
+                      const SizedBox(height: 5),
                       Text(
-                        cafe.location,
+                        widget.cafe.location, // Berubah jadi widget.cafe
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 16, 
                           color: Color(0xFF8D6E63),
                         ),
                       ),
+                      
+                      const SizedBox(height: 20),
+                      const Divider(color: Color(0xFFEEEEEE), thickness: 1.5),
+                      const SizedBox(height: 20),
 
-                      // Garis Pembatas (Padanan View tinggi 1dp)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Divider(
-                          color: Color(0xFFEEEEEE),
-                          thickness: 1,
-                        ),
-                      ),
-
-                      // Tentang Cafe
                       const Text(
                         "Tentang Cafe",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18, 
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF4E342E),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        cafe.description,
-                        style: const TextStyle(
-                          color: Color(0xFF5D4037),
-                          height: 1.5, // LineSpacingExtra
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Fasilitas
-                      const Text(
-                        "Fasilitas",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4E342E),
+                          color: Color(0xFF333333),
                         ),
                       ),
                       const SizedBox(height: 10),
+                      Text(
+                        widget.cafe.description, // Berubah jadi widget.cafe
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF5D4037),
+                          height: 1.6,
+                        ),
+                      ),
 
-                      // Padanan LinearLayout Horizontal untuk Fasilitas
+                      const SizedBox(height: 25),
+                      
+                      const Text(
+                        "Fasilitas",
+                        style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      
                       Wrap(
-                        spacing: 8, // Jarak antar item (layout_marginEnd)
-                        runSpacing: 8, // Jarak jika turun ke baris baru
+                        spacing: 10,
+                        runSpacing: 10,
                         children: [
                           _buildFasilitasChip("WiFi"),
                           _buildFasilitasChip("Indoor AC"),
@@ -139,6 +157,48 @@ class DetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+
+          // 4. TOMBOL BACK (Di pojok kiri atas)
+          Positioned(
+            top: 50,
+            left: 20,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+              ),
+            ),
+          ),
+
+          // 5. TOMBOL FAVORIT BARU (Di pojok kanan atas)
+          Positioned(
+            top: 50,
+            right: 20,
+            child: GestureDetector(
+              onTap: _toggleFavorite, // Memanggil fungsi di atas
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9), // Warna background putih cerah
+                  shape: BoxShape.circle,
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+                  ]
+                ),
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : Colors.grey, // Merah kalau aktif, abu-abu kalau belum
+                  size: 28,
+                ),
               ),
             ),
           ),
@@ -147,19 +207,20 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget untuk membuat tag fasilitas agar kode tidak menumpuk
+  // Widget Helper tetap sama
   Widget _buildFasilitasChip(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFF5EBE0),
-        borderRadius: BorderRadius.circular(4), // Kasih sedikit lengkungan agar rapi
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
         style: const TextStyle(
           color: Color(0xFF4E342E),
-          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
         ),
       ),
     );
