@@ -19,7 +19,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final SupabaseService _supabaseService = SupabaseService();
 
-  // 1. Tempat nyimpan data dari API Amar nanti
+
   List<Cafe> favoriteCafes = [];
   bool isLoading = false;
 
@@ -29,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadFavorites();
   }
 
-  // 2. Fungsi buat ambil data favorit
+  
   Future<void> _loadFavorites() async {
     setState(() {
       isLoading = true;
@@ -80,9 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
         children: [
-          // ==========================================
-          // 1. HEADER PROFIL (Asli buatanmu)
-          // ==========================================
+      
           Container(
             width: double.infinity,
             height: 210,
@@ -101,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const SizedBox(height: 20),
 
-                // FOTO PROFIL BUNDAR
+               
                 Container(
                   width: 84,
                   height: 84,
@@ -118,10 +116,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 12),
 
-                // NAMA USER
+              
                 Text(
                   widget
-                      .username, // Berubah jadi widget.username karena StateFul
+                      .username, 
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -132,16 +130,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // ==========================================
-          // 2. KONTEN SCROLL BAWAH
-          // ==========================================
+        
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- BAGIAN FAVORIT KAFE ---
+                 
                   const Text(
                     "Kafe Favorit Saya",
                     style: TextStyle(
@@ -152,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Menampilkan Loading, Empty State, atau List Favorit
+                
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : favoriteCafes.isEmpty
@@ -165,7 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(color: Colors.black12, thickness: 1),
                   const SizedBox(height: 20),
 
-                  // --- BAGIAN PENGATURAN (Asli buatanmu) ---
+                
                   const Text(
                     "Pengaturan Akun",
                     style: TextStyle(
@@ -175,8 +171,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  
 
-                  // KARTU UBAH PASSWORD
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
@@ -186,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                        // TODO: Buka halaman EditProfileScreen
+                       
                       },
                       child: const Padding(
                         padding: EdgeInsets.all(16.0),
@@ -240,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(
                     height: 20,
-                  ), // Tambahan ruang kosong di bawah agar tidak mentok
+                  ), 
                 ],
               ),
             ),
@@ -250,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // WIDGET HELPER: Tampilan kalau favorit masih kosong
+
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
@@ -277,14 +273,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // WIDGET HELPER: Tampilan List Favorit
+  
   Widget _buildFavoriteList() {
     return ListView.builder(
       shrinkWrap:
-          true, // WAJIB ADA: Agar ListView tidak error di dalam SingleChildScrollView
+          true, 
       physics:
-          const NeverScrollableScrollPhysics(), // WAJIB ADA: Agar scrollnya menyatu dengan halaman
-      itemCount: favoriteCafes.length, // Nanti ikut jumlah data API
+          const NeverScrollableScrollPhysics(), 
+      itemCount: favoriteCafes.length, 
       itemBuilder: (context, index) {
         final cafe = favoriteCafes[index];
         return Container(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/cafe.dart';
 import '../services/supabase_service.dart';
 import '../widgets/weather_card.dart';
-import 'detail_screen.dart'; // File ini harus ada agar navigasi tidak error
+import 'detail_screen.dart'; 
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   late Future<List<Cafe>> _futureCafes;
   static const int _maxRecommendedCafe = 4;
 
-  // Logika toggle tampilan (isGridView = false)
+
   bool _isGridView = false;
 
   @override
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
         children: [
-          // HEADER: Pindahan dari @id/header_container di XML
+          
           Container(
             width: double.infinity,
             height: 190,
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // BODY: Area scroll (Pengganti NestedScrollView)
+         
           Expanded(
             child: FutureBuilder<List<Cafe>>(
               future: _futureCafes,
@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                 return SingleChildScrollView(
                   child: Column(
                     children: [
-                      // Weather Card Component
+                      
                       WeatherCard(),
 
                       Padding(
@@ -136,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
 
-                      // LIST/GRID CAFE (Pengganti rv_home)
+                     
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: _isGridView
@@ -154,10 +154,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Tampilan List (Pengganti item_cafe_linear.xml)
+ 
   Widget _buildList(List<Cafe> cafeList) {
     return ListView.builder(
-      shrinkWrap: true, // Wajib jika di dalam ScrollView
+      shrinkWrap: true, 
       physics: const NeverScrollableScrollPhysics(),
       itemCount: cafeList.length,
       itemBuilder: (context, index) {
@@ -214,8 +214,8 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+  
 
-  // Tampilan Grid (Pengganti item_cafe_grid.xml)
   Widget _buildGrid(List<Cafe> cafeList) {
     return GridView.builder(
       shrinkWrap: true,

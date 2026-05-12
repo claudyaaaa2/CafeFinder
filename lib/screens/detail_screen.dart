@@ -14,7 +14,7 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   final SupabaseService _supabaseService = SupabaseService();
 
-  // Variabel untuk nyimpan status warna tombol hati
+  
   bool isFavorite = false;
   bool _isFavoriteLoading = true;
 
@@ -106,7 +106,7 @@ class _DetailScreenState extends State<DetailScreen> {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Stack(
         children: [
-          // 1. GAMBAR BACKGROUND (Header)
+          
           Image.network(
             widget.cafe.imageUrl,
             width: double.infinity,
@@ -122,13 +122,13 @@ class _DetailScreenState extends State<DetailScreen> {
             },
           ),
 
-          // 2. KONTEN SCROLLABLE
+          
           SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 360),
 
-                // 3. KARTU PUTIH (THE FLOATING CARD)
+                
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -240,7 +240,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
 
-          // 4. TOMBOL BACK (Di pojok kiri atas)
+          
           Positioned(
             top: 50,
             left: 20,
@@ -286,7 +286,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: isFavorite
                       ? Colors.red
-                      : Colors.grey, // Merah kalau aktif, abu-abu kalau belum
+                      : Colors.grey, 
                   size: 28,
                 ),
               ),

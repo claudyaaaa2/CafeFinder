@@ -31,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String password = _passwordController.text;
     String confirmPassword = _confirmPasswordController.text;
 
-    // 1. Cek apakah ada yang kosong
+    
     if (email.isEmpty ||
         username.isEmpty ||
         password.isEmpty ||
@@ -49,15 +49,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // 2. Cek apakah password kurang dari 6 karakter
+   
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password minimal 6 karakter")),
       );
-      return; // Langsung stop
+      return; 
     }
 
-    // 3. Cek apakah konfirmasi password cocok
+
     if (password != confirmPassword) {
       ScaffoldMessenger.of(
         context,
@@ -98,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0), // Sesuai android:background
       body: SingleChildScrollView(
-        // Pengganti LinearLayout dengan padding 32dp (horizontal), 60dp (top), 30dp (bottom)
+        
         padding: const EdgeInsets.only(
           left: 32,
           right: 32,
@@ -106,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           bottom: 30,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Agar teks rata kiri
+          crossAxisAlignment: CrossAxisAlignment.start, 
           children: [
             const Text(
               "Daftar Akun",

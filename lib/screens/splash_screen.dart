@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Beri jeda 3 detik lalu pindah ke Login
+    
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -27,13 +27,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Pakai warna cokelat tema CafeFinder
+      
       backgroundColor: const Color(0xFF4E342E), 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 1. ICON/LOGO (Pakai icon bawaan dulu biar aman)
+      
             const Icon(
               Icons.coffee_maker_rounded,
               size: 90,
@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 16),
 
-            // 2. NAMA APLIKASI
+          
             const Text(
               "CafeFinder",
               style: TextStyle(
@@ -54,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
             
             const SizedBox(height: 8),
 
-            // 3. TAGLINE KECIL
+            
             const Text(
               "Temukan Tempat Nugas Ternyaman di Palu",
               style: TextStyle(
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
             const SizedBox(height: 40),
 
-            // 4. LOADING INDICATOR (Biar user tahu aplikasi lagi kerja)
+            
             const SizedBox(
               width: 30,
               height: 30,
