@@ -47,9 +47,7 @@ class WeatherCard extends StatelessWidget {
       ),
       child: const SizedBox(
         height: 80,
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }
@@ -76,10 +74,7 @@ class WeatherCard extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey[700], fontSize: 14),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -112,11 +107,7 @@ class WeatherCard extends StatelessWidget {
             width: 60,
             height: 60,
             errorBuilder: (context, error, stackTrace) {
-              return Icon(
-                Icons.cloud,
-                size: 60,
-                color: Colors.grey[400],
-              );
+              return Icon(Icons.cloud, size: 60, color: Colors.grey[400]);
             },
           ),
           const SizedBox(width: 16),

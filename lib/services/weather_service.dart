@@ -72,12 +72,14 @@ class WeatherService {
         throw Exception('WEATHER_API_KEY tidak tersetting di .env');
       }
 
-      final response = await http.get(
-        Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?'
-          'lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric',
-        ),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://api.openweathermap.org/data/2.5/weather?'
+              'lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric',
+            ),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

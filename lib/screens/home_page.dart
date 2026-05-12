@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       // Weather Card Component
                       WeatherCard(),
-                      
+
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                         child: Row(
