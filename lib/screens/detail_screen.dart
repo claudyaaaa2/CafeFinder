@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/cafe.dart';
+import '../services/supabase_service.dart';
 
 class DetailScreen extends StatefulWidget {
   final Cafe cafe;
@@ -11,27 +12,92 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  final SupabaseService _supabaseService = SupabaseService();
+
   // Variabel untuk nyimpan status warna tombol hati
   bool isFavorite = false;
+  bool _isFavoriteLoading = true;
 
-  // Fungsi yang nanti akan dikerjakan Amar
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteState();
+  }
+
+  Future<void> _loadFavoriteState() async {
+    if (widget.cafe.id == null) {
+      if (!mounted) return;
+      setState(() {
+        _isFavoriteLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final saved = await _supabaseService.isCafeFavorited(widget.cafe.id!);
+      if (!mounted) return;
+      setState(() {
+        isFavorite = saved;
+      });
+    } catch (_) {
+      // Keep default state if check fails.
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isFavoriteLoading = false;
+      });
+    }
+  }
+
   Future<void> _toggleFavorite() async {
-    // TODO: AMAR - Masukkan logika http.post ke API Laravel/MongoDB di sini!
-    // Kamu bisa kirim 'widget.cafe.name' atau ID kafenya ke backend.
-    
-    // UI Flutter akan langsung merubah warna hatinya
+    if (widget.cafe.id == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Data cafe tidak valid.')));
+      return;
+    }
+
+    if (_isFavoriteLoading) {
+      return;
+    }
+
     setState(() {
-      isFavorite = !isFavorite;
+      _isFavoriteLoading = true;
     });
 
-    // Munculkan notifikasi pop-up kecil di bawah
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(isFavorite ? "Ditambahkan ke Favorit" : "Dihapus dari Favorit"),
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    try {
+      if (isFavorite) {
+        await _supabaseService.removeFavoriteCafe(widget.cafe.id!);
+      } else {
+        await _supabaseService.addFavoriteCafe(widget.cafe.id!);
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        isFavorite = !isFavorite;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isFavorite ? 'Ditambahkan ke Favorit' : 'Dihapus dari Favorit',
+          ),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengubah favorit: $error')));
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isFavoriteLoading = false;
+      });
+    }
   }
 
   @override
@@ -41,11 +107,19 @@ class _DetailScreenState extends State<DetailScreen> {
       body: Stack(
         children: [
           // 1. GAMBAR BACKGROUND (Header)
-          Image.asset(
-            widget.cafe.imagePath, // Berubah jadi widget.cafe
+          Image.network(
+            widget.cafe.imageUrl,
             width: double.infinity,
             height: 420,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                width: double.infinity,
+                height: 420,
+                child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+              );
+            },
           ),
 
           // 2. KONTEN SCROLLABLE
@@ -88,7 +162,11 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Color(0xFFFFB300), size: 24),
+                              const Icon(
+                                Icons.star,
+                                color: Color(0xFFFFB300),
+                                size: 24,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 widget.cafe.rating, // Berubah jadi widget.cafe
@@ -106,11 +184,11 @@ class _DetailScreenState extends State<DetailScreen> {
                       Text(
                         widget.cafe.location, // Berubah jadi widget.cafe
                         style: const TextStyle(
-                          fontSize: 16, 
+                          fontSize: 16,
                           color: Color(0xFF8D6E63),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 20),
                       const Divider(color: Color(0xFFEEEEEE), thickness: 1.5),
                       const SizedBox(height: 20),
@@ -118,7 +196,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       const Text(
                         "Tentang Cafe",
                         style: TextStyle(
-                          fontSize: 18, 
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF333333),
                         ),
@@ -134,17 +212,17 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
 
                       const SizedBox(height: 25),
-                      
+
                       const Text(
                         "Fasilitas",
                         style: TextStyle(
-                          fontSize: 18, 
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF333333),
                         ),
                       ),
                       const SizedBox(height: 15),
-                      
+
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
@@ -174,7 +252,11 @@ class _DetailScreenState extends State<DetailScreen> {
                   color: Colors.white.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
             ),
           ),
@@ -188,20 +270,38 @@ class _DetailScreenState extends State<DetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9), // Warna background putih cerah
+                  color: Colors.white.withOpacity(
+                    0.9,
+                  ), // Warna background putih cerah
                   shape: BoxShape.circle,
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
-                  ]
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.grey, // Merah kalau aktif, abu-abu kalau belum
+                  color: isFavorite
+                      ? Colors.red
+                      : Colors.grey, // Merah kalau aktif, abu-abu kalau belum
                   size: 28,
                 ),
               ),
             ),
           ),
+          if (_isFavoriteLoading)
+            const Positioned(
+              top: 58,
+              right: 66,
+              child: SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
         ],
       ),
     );

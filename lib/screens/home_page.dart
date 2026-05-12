@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/cafe.dart';
+import '../services/supabase_service.dart';
+import '../widgets/weather_card.dart';
 import 'detail_screen.dart'; // File ini harus ada agar navigasi tidak error
 
 class HomePage extends StatefulWidget {
@@ -13,40 +15,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final SupabaseService _supabaseService = SupabaseService();
+  late Future<List<Cafe>> _futureCafes;
+  static const int _maxRecommendedCafe = 4;
+
   // Logika toggle tampilan (isGridView = false)
   bool _isGridView = false;
 
-  // Data List (Pindahan dari prepareData() di Java)
-  final List<Cafe> _cafeList = [
-    Cafe(
-      name: "Sin Coffee 3",
-      rating: "⭐ 4.2",
-      location: "Tondo, Kota Palu",
-      description: "Tempat favorit mahasiswa buat ngerjain tugas. Suasananya tenang, kopinya enak.",
-      imagePath: "assets/cafe1.jpg",
-    ),
-    Cafe(
-      name: "Ruang Dualapan",
-      rating: "⭐ 4.5",
-      location: "Besusu, Kota Palu",
-      description: "Konsep industrial yang kece. Cocok buat nongkrong sore sambil nugas santai.",
-      imagePath: "assets/cafe2.jpg",
-    ),
-    Cafe(
-      name: "Kafi Coffee Palu",
-      rating: "⭐ 4.8",
-      location: "Polem, Kota Palu",
-      description: "Salah satu cafe dengan rating tertinggi di Palu. Sangat nyaman untuk meeting.",
-      imagePath: "assets/cafe3.jpg",
-    ),
-    Cafe(
-      name: "GIS Coffee",
-      rating: "⭐ 4.8",
-      location: "Jl. Bali, Kota Palu",
-      description: "Tempatnya luas, parkiran aman, dan kopinya juara.",
-      imagePath: "assets/cafe4.png",
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _futureCafes = _supabaseService.getAllCafes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +42,11 @@ class _HomePageState extends State<HomePage> {
             decoration: const BoxDecoration(
               color: Color(0xFF4E342E),
               boxShadow: [
-                BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2))
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
               ],
             ),
             child: Column(
@@ -89,45 +73,80 @@ class _HomePageState extends State<HomePage> {
 
           // BODY: Area scroll (Pengganti NestedScrollView)
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Judul & Tombol Toggle (Pengganti btn_switch_view)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: FutureBuilder<List<Cafe>>(
+              future: _futureCafes,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "Rekomendasi Utama",
-                          style: TextStyle(
-                            color: Color(0xFF4E342E),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            _isGridView ? Icons.view_list : Icons.grid_view,
-                            color: const Color(0xFF4E342E),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isGridView = !_isGridView; // Update tampilan
-                            });
-                          },
-                        ),
+                        Icon(Icons.error, color: Colors.red, size: 64),
+                        SizedBox(height: 16),
+                        Text('Error: ${snapshot.error}'),
                       ],
                     ),
-                  ),
+                  );
+                }
 
-                  // LIST/GRID CAFE (Pengganti rv_home)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: _isGridView ? _buildGrid() : _buildList(),
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Tidak ada data cafe'));
+                }
+
+                final cafeList = snapshot.data!;
+                final recommendedCafes = cafeList
+                    .take(_maxRecommendedCafe)
+                    .toList();
+
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Weather Card Component
+                      WeatherCard(),
+                      
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Rekomendasi Utama",
+                              style: TextStyle(
+                                color: Color(0xFF4E342E),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                _isGridView ? Icons.view_list : Icons.grid_view,
+                                color: const Color(0xFF4E342E),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isGridView = !_isGridView; // Update tampilan
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // LIST/GRID CAFE (Pengganti rv_home)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: _isGridView
+                            ? _buildGrid(recommendedCafes)
+                            : _buildList(recommendedCafes),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -136,23 +155,59 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Tampilan List (Pengganti item_cafe_linear.xml)
-  Widget _buildList() {
+  Widget _buildList(List<Cafe> cafeList) {
     return ListView.builder(
       shrinkWrap: true, // Wajib jika di dalam ScrollView
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _cafeList.length,
+      itemCount: cafeList.length,
       itemBuilder: (context, index) {
-        final cafe = _cafeList[index];
+        final cafe = cafeList[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(cafe.imagePath, width: 60, height: 60, fit: BoxFit.cover),
+              child: Image.network(
+                cafe.imageUrl,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey[600],
+                    ),
+                  );
+                },
+              ),
             ),
-            title: Text(cafe.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(cafe.location, maxLines: 1, overflow: TextOverflow.ellipsis),
-            trailing: Text(cafe.rating, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+            title: Text(
+              cafe.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              cafe.location,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star, size: 16, color: Colors.amber),
+                const SizedBox(width: 4),
+                Text(
+                  cafe.rating,
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
             onTap: () => _goToDetail(cafe),
           ),
         );
@@ -161,11 +216,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Tampilan Grid (Pengganti item_cafe_grid.xml)
-  Widget _buildGrid() {
+  Widget _buildGrid(List<Cafe> cafeList) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _cafeList.length,
+      itemCount: cafeList.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10,
@@ -173,7 +228,7 @@ class _HomePageState extends State<HomePage> {
         childAspectRatio: 0.8,
       ),
       itemBuilder: (context, index) {
-        final cafe = _cafeList[index];
+        final cafe = cafeList[index];
         return GestureDetector(
           onTap: () => _goToDetail(cafe),
           child: Card(
@@ -182,8 +237,23 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    child: Image.asset(cafe.imagePath, width: double.infinity, fit: BoxFit.cover),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(4),
+                    ),
+                    child: Image.network(
+                      cafe.imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: Colors.grey[600],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 Padding(
@@ -191,8 +261,24 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(cafe.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1),
-                      Text(cafe.rating, style: const TextStyle(color: Colors.amber, fontSize: 12)),
+                      Text(
+                        cafe.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 14, color: Colors.amber),
+                          const SizedBox(width: 4),
+                          Text(
+                            cafe.rating,
+                            style: const TextStyle(
+                              color: Colors.amber,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

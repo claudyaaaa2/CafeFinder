@@ -22,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Ini adalah isi dari FrameLayout (fragment_container)
+    
     final List<Widget> pages = [
       HomePage(username: widget.username),       // Index 0: Tab Home
       const ExploreScreen(),                     // Index 1: Tab Explore
@@ -30,10 +30,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      // Slot Body menggantikan FrameLayout
       body: pages[_selectedIndex],
-      
-      // Slot ini menggantikan BottomNavigationView di XML
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           boxShadow: [

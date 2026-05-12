@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'register_screen.dart';
 import 'main_screen.dart'; // <--- Pastikan file ini ada di folder yang sama
 
@@ -10,12 +11,55 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Harap isi email dan password')),
+      );
+      return;
+    }
+
+    try {
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      final displayName =
+          (response.user?.userMetadata?['username'] as String?) ??
+          response.user?.email ??
+          email;
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MainScreen(username: displayName),
+        ),
+      );
+    } on AuthException catch (error) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (error) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login gagal: $error')));
+    }
   }
 
   @override
@@ -30,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 400,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/cafe_header.jpg'), 
+                image: AssetImage('assets/cafe_header.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -50,15 +94,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 40,
+                ),
                 child: Column(
                   children: [
                     const Text(
                       "CafeFinder",
                       style: TextStyle(
-                        fontSize: 32, 
-                        fontWeight: FontWeight.bold, 
-                        color: Color(0xFF4E342E)
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4E342E),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -69,26 +116,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Field Username
-                    _buildLabel("Username"),
+                    // Field Email
+                    _buildLabel("Email"),
                     const SizedBox(height: 10),
                     _buildTextField(
-                      hint: "Masukkan username kamu", 
-                      icon: Icons.person_outline, 
-                      controller: _usernameController
+                      hint: "Masukkan email kamu",
+                      icon: Icons.person_outline,
+                      controller: _emailController,
                     ),
-                    
+
                     const SizedBox(height: 25),
 
                     // Field Password
                     _buildLabel("Password"),
                     const SizedBox(height: 10),
                     _buildTextField(
-                      hint: "Masukkan password", 
-                      icon: Icons.lock_outline, 
-                      isPassword: true
+                      hint: "Masukkan password",
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                      controller: _passwordController,
                     ),
-                    
+
                     const SizedBox(height: 40),
 
                     // TOMBOL MASUK SEKARANG
@@ -99,29 +147,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4E342E),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)
+                            borderRadius: BorderRadius.circular(15),
                           ),
                           elevation: 5,
                         ),
-                        onPressed: () {
-
-                        String namaUser = _usernameController.text;
-
-                        // 2. Kirim nama tersebut ke MainScreen
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            // HAPUS 'const' karena datanya sekarang dinamis dari inputan
-                            builder: (context) => MainScreen(username: namaUser), 
-                          ),
-                        );
-                      },
+                        onPressed: _login,
                         child: const Text(
                           "Masuk Sekarang",
                           style: TextStyle(
-                            color: Colors.white, 
-                            fontSize: 18, 
-                            fontWeight: FontWeight.bold
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -138,15 +174,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const RegisterScreen()
+                                builder: (context) => const RegisterScreen(),
                               ),
                             );
                           },
                           child: const Text(
                             "Daftar di sini",
                             style: TextStyle(
-                              color: Color(0xFF4E342E), 
-                              fontWeight: FontWeight.bold
+                              color: Color(0xFF4E342E),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -168,19 +204,19 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          fontWeight: FontWeight.bold, 
-          fontSize: 16, 
-          color: Color(0xFF4E342E)
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Color(0xFF4E342E),
         ),
       ),
     );
   }
 
   Widget _buildTextField({
-    required String hint, 
-    required IconData icon, 
-    bool isPassword = false, 
-    TextEditingController? controller 
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    TextEditingController? controller,
   }) {
     return TextField(
       controller: controller,
@@ -190,7 +226,10 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(icon, color: Colors.grey),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 15,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.grey.shade300),

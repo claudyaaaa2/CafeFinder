@@ -5,11 +5,7 @@ class ItemCafeLinear extends StatelessWidget {
   final Cafe cafe;
   final VoidCallback onTap;
 
-  const ItemCafeLinear({
-    super.key,
-    required this.cafe,
-    required this.onTap,
-  });
+  const ItemCafeLinear({super.key, required this.cafe, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +16,50 @@ class ItemCafeLinear extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16), // app:cardCornerRadius="16dp"
       ),
-      clipBehavior: Clip.antiAlias, // Penting: memotong ujung gambar agar mengikuti lengkungan kartu
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap, // Efek ripple saat diklik
-        child: Row( // Sesuai LinearLayout horizontal
+        onTap: onTap,
+        child: Row(
+          // Sesuai LinearLayout horizontal
           children: [
-            // 1. Gambar Kafe (Sesuai ImageView img_item_photo)
-            Image.asset(
-              cafe.imagePath,
+            Image.network(
+              cafe.imageUrl,
               width: 100, // layout_width="100dp"
               height: 100, // layout_height="100dp"
               fit: BoxFit.cover, // scaleType="centerCrop"
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.grey[300],
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: Colors.grey[600],
+                  ),
+                );
+              },
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  width: 100,
+                  height: 100,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
             ),
-            
-            // 2. Kontainer Teks (Sesuai LinearLayout vertical)
-            // Expanded digunakan agar teks mengambil sisa ruang di sebelah kanan gambar
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0), // android:padding="12dp"
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // android:gravity="center_vertical"
+                  mainAxisAlignment: MainAxisAlignment
+                      .center, // android:gravity="center_vertical"
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Nama Kafe (tv_item_name)
@@ -52,7 +72,7 @@ class ItemCafeLinear extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     // Lokasi Kafe (tv_item_address)
                     Text(
                       cafe.location,
@@ -63,17 +83,25 @@ class ItemCafeLinear extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
-                    const SizedBox(height: 4), // layout_marginTop="4dp"
-                    
-                    // Rating Kafe (tv_item_rating)
-                    Text(
-                      cafe.rating, // Data model sudah memuat icon ⭐
-                      style: const TextStyle(
-                        color: Color(0xFFFF9800), // Warna oranye
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          size: 16,
+                          color: Color(0xFFFF9800),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          cafe.rating,
+                          style: const TextStyle(
+                            color: Color(0xFFFF9800), // Warna oranye
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

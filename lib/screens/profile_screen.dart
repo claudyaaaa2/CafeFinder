@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/cafe.dart';
+import '../services/supabase_service.dart';
+import 'detail_screen.dart';
 import 'login_screen.dart'; // Import agar fungsi Logout bisa kembali ke Login
 // import 'edit_profile_screen.dart'; // Ini akan kita aktifkan nanti setelah filenya dibuat
 
@@ -13,9 +17,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final SupabaseService _supabaseService = SupabaseService();
+
   // 1. Tempat nyimpan data dari API Amar nanti
-  List<dynamic> favoriteCafes = []; 
-  bool isLoading = false; 
+  List<Cafe> favoriteCafes = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -25,9 +31,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // 2. Fungsi buat ambil data favorit
   Future<void> _loadFavorites() async {
-    // TODO: AMAR - Ambil data favorit user dari MongoDB di sini
-    // Pakai http.get, lalu masukkan hasilnya ke variabel 'favoriteCafes'
-    // Jangan lupa set isLoading = true saat fetching, dan false kalau sudah selesai.
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final favorites = await _supabaseService.getMyFavoriteCafes();
+      if (!mounted) return;
+      setState(() {
+        favoriteCafes = favorites;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat favorit: $error')));
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _removeFavorite(Cafe cafe) async {
+    if (cafe.id == null) return;
+
+    try {
+      await _supabaseService.removeFavoriteCafe(cafe.id!);
+      if (!mounted) return;
+      setState(() {
+        favoriteCafes.removeWhere((item) => item.id == cafe.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${cafe.name} dihapus dari favorit')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus favorit: $error')),
+      );
+    }
   }
 
   @override
@@ -49,14 +93,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.black26,
                   blurRadius: 8,
                   offset: Offset(0, 4),
-                )
+                ),
               ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                
+
                 // FOTO PROFIL BUNDAR
                 Container(
                   width: 84,
@@ -71,12 +115,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Icon(Icons.person, size: 50, color: Colors.white),
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // NAMA USER
                 Text(
-                  widget.username, // Berubah jadi widget.username karena StateFul
+                  widget
+                      .username, // Berubah jadi widget.username karena StateFul
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -96,7 +141,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   // --- BAGIAN FAVORIT KAFE ---
                   const Text(
                     "Kafe Favorit Saya",
@@ -109,13 +153,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 12),
 
                   // Menampilkan Loading, Empty State, atau List Favorit
-                  isLoading 
-                    ? const Center(child: CircularProgressIndicator())
-                    : favoriteCafes.isEmpty
-                        ? _buildEmptyState()
-                        : _buildFavoriteList(),
-                  
-                  const SizedBox(height: 35), // Jarak antara Favorit dan Pengaturan
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : favoriteCafes.isEmpty
+                      ? _buildEmptyState()
+                      : _buildFavoriteList(),
+
+                  const SizedBox(
+                    height: 35,
+                  ), // Jarak antara Favorit dan Pengaturan
                   const Divider(color: Colors.black12, thickness: 1),
                   const SizedBox(height: 20),
 
@@ -172,20 +218,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       onPressed: () {
+                        Supabase.instance.client.auth.signOut();
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
                           (Route<dynamic> route) => false,
                         );
                       },
                       child: const Text(
                         "Keluar",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 20), // Tambahan ruang kosong di bawah agar tidak mentok
+
+                  const SizedBox(
+                    height: 20,
+                  ), // Tambahan ruang kosong di bawah agar tidak mentok
                 ],
               ),
             ),
@@ -203,7 +258,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          style: BorderStyle.solid,
+        ),
       ),
       child: Column(
         children: [
@@ -222,34 +280,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // WIDGET HELPER: Tampilan List Favorit
   Widget _buildFavoriteList() {
     return ListView.builder(
-      shrinkWrap: true, // WAJIB ADA: Agar ListView tidak error di dalam SingleChildScrollView
-      physics: const NeverScrollableScrollPhysics(), // WAJIB ADA: Agar scrollnya menyatu dengan halaman
+      shrinkWrap:
+          true, // WAJIB ADA: Agar ListView tidak error di dalam SingleChildScrollView
+      physics:
+          const NeverScrollableScrollPhysics(), // WAJIB ADA: Agar scrollnya menyatu dengan halaman
       itemCount: favoriteCafes.length, // Nanti ikut jumlah data API
       itemBuilder: (context, index) {
-        // TODO: AMAR - Sesuaikan dengan key JSON MongoDB di sini
+        final cafe = favoriteCafes[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3))
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 3),
+              ),
             ],
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(10),
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset('assets/cafe_header.jpg', width: 60, height: 60, fit: BoxFit.cover),
+              child: Image.network(
+                cafe.imageUrl,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey[600],
+                    ),
+                  );
+                },
+              ),
             ),
-            title: const Text("Nama Kafe", style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: const Text("Lokasi Kafe"),
+            title: Text(
+              cafe.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(cafe.location),
             trailing: IconButton(
               icon: const Icon(Icons.favorite, color: Colors.red),
               onPressed: () {
-                // TODO: AMAR - Fungsi hapus favorit dari database
+                _removeFavorite(cafe);
               },
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailScreen(cafe: cafe),
+                ),
+              ).then((_) => _loadFavorites());
+            },
           ),
         );
       },
