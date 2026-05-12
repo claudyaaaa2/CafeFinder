@@ -12,52 +12,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  // Logika 100% sama dengan RegisterActivity.java kamu
+  // Logika Register dengan Early Return (Lebih rapi dan bebas error VS Code)
   void _register() {
     String username = _usernameController.text;
     String password = _passwordController.text;
     String confirmPassword = _confirmPasswordController.text;
 
+    // 1. Cek apakah ada yang kosong
     if (username.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Harap isi semua field")),
       );
-    } else {
-      if (password == confirmPassword) {
-        if (password.length < 6) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Password minimal 6 karakter")),
-          );
-          return;
-        }
-
-        // --- AREA DATABASE DUMMY ---
-        bool checkUsername = false; 
-
-        if (!checkUsername) {
-          bool insert = true; 
-
-          if (insert) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Registrasi Berhasil")),
-            );
-            Navigator.pop(context); // Kembali ke LoginActivity
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Registrasi Gagal")),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Username sudah digunakan")),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password tidak cocok")),
-        );
-      }
+      return; // Langsung stop/keluar dari fungsi
     }
+
+    // 2. Cek apakah password kurang dari 6 karakter
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password minimal 6 karakter")),
+      );
+      return; // Langsung stop
+    }
+
+    // 3. Cek apakah konfirmasi password cocok
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password tidak cocok")),
+      );
+      return; // Langsung stop
+    }
+
+    // ===============================================
+    // TODO: AMAR - Masukkan Logika API Register ke MongoDB di sini
+    // ===============================================
+    // Karena API belum ada, kita asumsikan register selalu berhasil untuk UI
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Registrasi Berhasil")),
+    );
+    Navigator.pop(context); // Sukses, kembali ke halaman Login
   }
 
   @override
