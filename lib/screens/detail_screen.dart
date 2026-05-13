@@ -14,7 +14,6 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   final SupabaseService _supabaseService = SupabaseService();
 
-  
   bool isFavorite = false;
   bool _isFavoriteLoading = true;
 
@@ -51,15 +50,10 @@ class _DetailScreenState extends State<DetailScreen> {
 
   Future<void> _toggleFavorite() async {
     if (widget.cafe.id == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Data cafe tidak valid.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data cafe tidak valid.')));
       return;
     }
-
-    if (_isFavoriteLoading) {
-      return;
-    }
+    if (_isFavoriteLoading) return;
 
     setState(() {
       _isFavoriteLoading = true;
@@ -71,27 +65,20 @@ class _DetailScreenState extends State<DetailScreen> {
       } else {
         await _supabaseService.addFavoriteCafe(widget.cafe.id!);
       }
-
       if (!mounted) return;
-
       setState(() {
         isFavorite = !isFavorite;
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isFavorite ? 'Ditambahkan ke Favorit' : 'Dihapus dari Favorit',
-          ),
+          content: Text(isFavorite ? 'Ditambahkan ke Favorit' : 'Dihapus dari Favorit'),
           duration: const Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengubah favorit: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengubah favorit: $error')));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -106,7 +93,7 @@ class _DetailScreenState extends State<DetailScreen> {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Stack(
         children: [
-          
+          // Header Image
           Image.network(
             widget.cafe.imageUrl,
             width: double.infinity,
@@ -122,13 +109,11 @@ class _DetailScreenState extends State<DetailScreen> {
             },
           ),
 
-          
+          // Content
           SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 360),
-
-                
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -147,82 +132,57 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Nama & Rating
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(
-                              widget.cafe.name, // Berubah jadi widget.cafe
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF333333),
-                              ),
+                              widget.cafe.name,
+                              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
                             ),
                           ),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.star,
-                                color: Color(0xFFFFB300),
-                                size: 24,
-                              ),
+                              const Icon(Icons.star, color: Color(0xFFFFB300), size: 24),
                               const SizedBox(width: 4),
                               Text(
-                                widget.cafe.rating, // Berubah jadi widget.cafe
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFFFB300),
-                                ),
+                                widget.cafe.rating,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFB300)),
                               ),
                             ],
                           ),
                         ],
                       ),
                       const SizedBox(height: 5),
+                      
+                      // Alamat/Lokasi Text
                       Text(
-                        widget.cafe.location, // Berubah jadi widget.cafe
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF8D6E63),
-                        ),
+                        widget.cafe.location,
+                        style: const TextStyle(fontSize: 16, color: Color(0xFF8D6E63)),
                       ),
-
                       const SizedBox(height: 20),
                       const Divider(color: Color(0xFFEEEEEE), thickness: 1.5),
                       const SizedBox(height: 20),
 
+                      // Deskripsi
                       const Text(
                         "Tentang Cafe",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        widget.cafe.description, // Berubah jadi widget.cafe
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Color(0xFF5D4037),
-                          height: 1.6,
-                        ),
+                        widget.cafe.description,
+                        style: const TextStyle(fontSize: 15, color: Color(0xFF5D4037), height: 1.6),
                       ),
-
                       const SizedBox(height: 25),
 
+                      // Fasilitas
                       const Text(
                         "Fasilitas",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
                       ),
                       const SizedBox(height: 15),
-
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
@@ -240,7 +200,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
 
-          
+          // Back Button
           Positioned(
             top: 50,
             left: 20,
@@ -248,80 +208,53 @@ class _DetailScreenState extends State<DetailScreen> {
               onTap: () => Navigator.pop(context),
               child: Container(
                 padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.3), shape: BoxShape.circle),
+                child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+              ),
+            ),
+          ),
+
+          // Favorite Button
+          Positioned(
+            top: 50,
+            right: 20,
+            child: GestureDetector(
+              onTap: _toggleFavorite,
+              child: Container(
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withOpacity(0.9),
                   shape: BoxShape.circle,
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
                 ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : Colors.grey,
                   size: 28,
                 ),
               ),
             ),
           ),
 
-          // 5. TOMBOL FAVORIT BARU (Di pojok kanan atas)
-          Positioned(
-            top: 50,
-            right: 20,
-            child: GestureDetector(
-              onTap: _toggleFavorite, // Memanggil fungsi di atas
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(
-                    0.9,
-                  ), // Warna background putih cerah
-                  shape: BoxShape.circle,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite
-                      ? Colors.red
-                      : Colors.grey, 
-                  size: 28,
-                ),
-              ),
-            ),
-          ),
+          // Loading Indicator for Favorite
           if (_isFavoriteLoading)
             const Positioned(
               top: 58,
               right: 66,
-              child: SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
         ],
       ),
     );
   }
 
-  // Widget Helper tetap sama
   Widget _buildFasilitasChip(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5EBE0),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: const Color(0xFFF5EBE0), borderRadius: BorderRadius.circular(8)),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Color(0xFF4E342E),
-          fontWeight: FontWeight.w500,
-          fontSize: 14,
-        ),
+        style: const TextStyle(color: Color(0xFF4E342E), fontWeight: FontWeight.w500, fontSize: 14),
       ),
     );
   }

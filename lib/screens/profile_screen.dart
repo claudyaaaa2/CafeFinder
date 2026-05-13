@@ -4,7 +4,7 @@ import '../models/cafe.dart';
 import '../services/supabase_service.dart';
 import 'detail_screen.dart';
 import 'login_screen.dart'; // Import agar fungsi Logout bisa kembali ke Login
-// import 'edit_profile_screen.dart'; // Ini akan kita aktifkan nanti setelah filenya dibuat
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -19,7 +19,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final SupabaseService _supabaseService = SupabaseService();
 
-
   List<Cafe> favoriteCafes = [];
   bool isLoading = false;
 
@@ -29,7 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadFavorites();
   }
 
-  
   Future<void> _loadFavorites() async {
     setState(() {
       isLoading = true;
@@ -80,7 +78,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
         children: [
-      
           Container(
             width: double.infinity,
             height: 210,
@@ -98,8 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-
-               
                 Container(
                   width: 84,
                   height: 84,
@@ -113,13 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Icon(Icons.person, size: 50, color: Colors.white),
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
-              
                 Text(
-                  widget
-                      .username, 
+                  widget.username,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -129,15 +120,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-
-        
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                 
                   const Text(
                     "Kafe Favorit Saya",
                     style: TextStyle(
@@ -147,21 +135,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                
                   isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : favoriteCafes.isEmpty
                       ? _buildEmptyState()
                       : _buildFavoriteList(),
-
-                  const SizedBox(
-                    height: 35,
-                  ), // Jarak antara Favorit dan Pengaturan
+                  const SizedBox(height: 35),
                   const Divider(color: Colors.black12, thickness: 1),
                   const SizedBox(height: 20),
-
-                
                   const Text(
                     "Pengaturan Akun",
                     style: TextStyle(
@@ -171,8 +152,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
-
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
@@ -182,7 +161,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                       
+                        // PINDAH KE HALAMAN EDIT PROFIL
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EditProfileScreen(),
+                          ),
+                        ).then((_) => _loadFavorites()); // Refresh saat kembali
                       },
                       child: const Padding(
                         padding: EdgeInsets.all(16.0),
@@ -199,10 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // TOMBOL LOGOUT
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -233,10 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(
-                    height: 20,
-                  ), 
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -245,7 +224,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
 
   Widget _buildEmptyState() {
     return Container(
@@ -273,14 +251,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  
   Widget _buildFavoriteList() {
     return ListView.builder(
-      shrinkWrap:
-          true, 
-      physics:
-          const NeverScrollableScrollPhysics(), 
-      itemCount: favoriteCafes.length, 
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: favoriteCafes.length,
       itemBuilder: (context, index) {
         final cafe = favoriteCafes[index];
         return Container(

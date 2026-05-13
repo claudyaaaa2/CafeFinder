@@ -13,21 +13,52 @@ class SupabaseService {
 
   SupabaseClient get client => Supabase.instance.client;
 
-  // Get all cafes from database
+  // ==========================================================
+  // FITUR BARU: UPDATE PROFIL & PASSWORD
+  // ==========================================================
+
+  // Fungsi untuk update data di tabel profiles (Username)
+  Future<void> updateProfile(String userId, String username) async {
+    try {
+      await client
+          .from('profiles') // Pastikan nama tabel di Supabase kamu 'profiles'
+          .update({'username': username})
+          .eq('id', userId);
+      print('✅ Profile updated successfully');
+    } catch (e) {
+      print('❌ Error updating profile: $e');
+      rethrow;
+    }
+  }
+
+  // Fungsi untuk update password di Authentication Supabase
+  Future<void> updateUserPassword(String newPassword) async {
+    try {
+      await client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      print('✅ Password updated successfully');
+    } catch (e) {
+      print('❌ Error updating password: $e');
+      rethrow;
+    }
+  }
+
+  // ==========================================================
+  // FITUR CAFE & FAVORIT (KODE LAMA KAMU)
+  // ==========================================================
+
   Future<List<Cafe>> getAllCafes() async {
     try {
       print('🔍 Fetching cafes from Supabase...');
       final response = await client.from('cafe').select();
-      print('📊 Supabase response: $response');
-
+      
       if (response.isNotEmpty) {
         final cafeList = (response as List)
             .map((item) => Cafe.fromJson(item as Map<String, dynamic>))
             .toList();
-        print('✅ Parsed ${cafeList.length} cafes');
         return cafeList;
       }
-      print('❌ No cafes found in database');
       return [];
     } catch (e) {
       print('❌ Error fetching cafes: $e');
@@ -35,11 +66,9 @@ class SupabaseService {
     }
   }
 
-  // Get single cafe by id
   Future<Cafe?> getCafeById(int id) async {
     try {
       final response = await client.from('cafe').select().eq('id', id).single();
-
       return Cafe.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       print('Error fetching cafe by id: $e');
@@ -47,7 +76,6 @@ class SupabaseService {
     }
   }
 
-  // Search cafes by name
   Future<List<Cafe>> searchCafes(String query) async {
     try {
       final response = await client
@@ -56,19 +84,16 @@ class SupabaseService {
           .ilike('nama', '%$query%');
 
       if (response.isNotEmpty) {
-        final cafeList = (response as List)
+        return (response as List)
             .map((item) => Cafe.fromJson(item as Map<String, dynamic>))
             .toList();
-        return cafeList;
       }
       return [];
     } catch (e) {
-      print('Error searching cafes: $e');
       rethrow;
     }
   }
 
-  // Get cafes with minimum rating
   Future<List<Cafe>> getCafesByRating(double minRating) async {
     try {
       final response = await client
@@ -77,23 +102,19 @@ class SupabaseService {
           .gte('rating', minRating);
 
       if (response.isNotEmpty) {
-        final cafeList = (response as List)
+        return (response as List)
             .map((item) => Cafe.fromJson(item as Map<String, dynamic>))
             .toList();
-        return cafeList;
       }
       return [];
     } catch (e) {
-      print('Error fetching cafes by rating: $e');
       rethrow;
     }
   }
 
   Future<bool> isCafeFavorited(int cafeId) async {
     final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      return false;
-    }
+    if (userId == null) return false;
 
     final response = await client
         .from(_favoriteTable)
@@ -107,9 +128,7 @@ class SupabaseService {
 
   Future<void> addFavoriteCafe(int cafeId) async {
     final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      throw Exception('User belum login.');
-    }
+    if (userId == null) throw Exception('User belum login.');
 
     await client.from(_favoriteTable).insert({
       'user_id': userId,
@@ -119,9 +138,7 @@ class SupabaseService {
 
   Future<void> removeFavoriteCafe(int cafeId) async {
     final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      throw Exception('User belum login.');
-    }
+    if (userId == null) throw Exception('User belum login.');
 
     await client
         .from(_favoriteTable)
@@ -132,9 +149,7 @@ class SupabaseService {
 
   Future<List<Cafe>> getMyFavoriteCafes() async {
     final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      return [];
-    }
+    if (userId == null) return [];
 
     final response = await client
         .from(_favoriteTable)
